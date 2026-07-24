@@ -11,6 +11,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     body = await req.json();
   } catch {
+    
     return error(400, "Request body must contain valid JSON");
   }
 
