@@ -26,6 +26,7 @@ async function parseError(res: Response): Promise<ApiError> {
       detail = "Validation failed";
     }
   } catch {
+    
     /* non-JSON body */
   }
   return new ApiError(res.status, detail, fieldErrors);

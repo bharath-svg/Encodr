@@ -8,7 +8,56 @@ import { z } from "zod";
  * Right now it accepts ANY non-empty string. It should reject things like "not a url",
  * "ftp://...", a bare host with no path, etc. — and produce a helpful error message.
  */
-export const sourceUrlSchema = z.string().min(1, "Source URL is required");
+const MEDIA_EXTENSIONS = [
+  ".mp4",
+  ".mov",
+  ".m4v",
+  ".webm",
+  ".mkv",
+  ".avi",
+];
+
+export const sourceUrlSchema = z
+  .string()
+  .trim()
+  .min(1, "Source URL is required")
+  .superRefine((value, ctx) => {
+    if (!value) return;
+
+    let url: URL;
+
+    try {
+      url = new URL(value);
+    } catch {
+      ctx.addIssue({
+        code: "custom",
+        message: "Enter a valid URL",
+      });
+      return;
+    }
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      ctx.addIssue({
+        code: "custom",
+        message: "Source URL must use HTTP or HTTPS",
+      });
+      return;
+    }
+
+    const pathname = url.pathname.toLowerCase();
+
+    const hasMediaExtension = MEDIA_EXTENSIONS.some((extension) =>
+      pathname.endsWith(extension),
+    );
+
+    if (pathname === "/" || !hasMediaExtension) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "Enter a media URL ending in .mp4, .mov, .m4v, .webm, .mkv, or .avi",
+      });
+    }
+  });
 
 export const createJobSchema = z.object({
   sourceUrl: sourceUrlSchema,
