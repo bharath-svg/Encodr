@@ -15,7 +15,14 @@ export const jobKeys = {
   detail: (id: string) => ["jobs", id] as const,
 };
 
-// Two worked examples to show the intended React Query pattern:
+export const runKeys = {
+  detail: (id: string) => ["runs", id] as const,
+};
+
+interface StartRunResponse {
+  runId: string;
+}
+
 export function useJobs() {
   return useQuery({
     queryKey: jobKeys.all,
@@ -47,12 +54,50 @@ export function useCreateJob() {
   });
 }
 
-// TODO(candidate): a mutation to start a run (POST /api/runs → { runId }).
-//
-// TODO(candidate): a helper to fetch a single run (GET /api/runs/:id) — useful for reading the
-// result once the stream reports COMPLETED.
+export function useStartRun() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (jobId: string) =>
+      api.post<StartRunResponse>("/api/runs", {
+        jobId,
+      }),
+
+    onSuccess: async (_response, jobId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: jobKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: jobKeys.detail(jobId),
+        }),
+      ]);
+    },
+  });
+}
+
+export function useRun(runId: string | null) {
+  return useQuery({
+    queryKey: ["runs", runId],
+
+    queryFn: ({ signal }) => {
+      if (!runId) {
+        throw new Error("runId is required");
+      }
+
+      return api.get<EncodeRun>(
+        `/api/runs/${runId}`,
+        signal,
+      );
+    },
+
+    enabled: Boolean(runId),
+  });
+}
 
 /** Imperative one-shot fetch of a run's current state. */
 export function fetchRun(runId: string) {
-  return api.get<EncodeRun>(`/api/runs/${runId}`);
+  return api.get<EncodeRun>(
+    `/api/runs/${runId}`,
+  );
 }
