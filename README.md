@@ -58,3 +58,50 @@ that one **fail** partway, so you can build (and we can see) the error/retry pat
 When you're done, please update this README with: anything you assumed, key design decisions
 (especially how you authenticated the SSE stream and how the refresh/retry works), and what you'd do
 next with more time.
+
+
+
+
+
+
+/////////////////////////////////////////////////////////
+
+
+# Encodr - Fullstack Take-Home
+
+Encodr is a small media-transcoding dashboard built with Next.js, React, and TypeScript.
+
+A signed-in user can:
+
+1. create an encode job from a media source URL;
+2. start a transcode run;
+3. watch live stage, progress, and log updates through Server-Sent Events;
+4. view output renditions when the run completes;
+5. see a clear error and retry when a run fails.
+
+## Tech stack
+
+- Next.js App Router
+- React
+- TypeScript with strict mode
+- TanStack Query
+- React Hook Form
+- Zod
+- Server-Sent Events
+- Vitest
+- React Testing Library
+- Tailwind CSS
+
+## Requirements
+
+- Node.js 20 or newer
+- npm
+
+No database, external authentication provider, or manual environment configuration is required.
+
+## Running the application
+
+Install dependencies:
+
+```bash
+npm install
